@@ -5,32 +5,12 @@ class Grid {
   rows: Dimension[] = []
   columns: Dimension[] = []
 
-  get style() {
-    return `display: grid;
-grid-template-rows: ${this.rows
-      .map(a => {
-        switch (a.type) {
-          case 'px':
-            return `${a.value}px`
-          case 'fr':
-            return `${a.value}fr`
-          default:
-            return 'auto'
-        }
-      })
-      .join(' ')};
-grid-template-columns: ${this.columns
-      .map(a => {
-        switch (a.type) {
-          case 'px':
-            return `${a.value}px`
-          case 'fr':
-            return `${a.value}fr`
-          default:
-            return 'auto'
-        }
-      })
-      .join(' ')};`
+  get css() {
+    return `.container {
+  display: grid;
+  grid-template-rows: ${this.rows.map(a => a.token).join(' ')};
+  grid-template-columns: ${this.columns.map(a => a.token).join(' ')};
+}`
   }
 
   /**
@@ -58,6 +38,17 @@ class Dimension {
   type: DimensionType
   value?: number
 
+  get token() {
+    switch (this.type) {
+      case 'px':
+        return `${this.value}px`
+      case 'fr':
+        return `${this.value}fr`
+      default:
+        return 'auto'
+    }
+  }
+
   /**
    * 构造方法
    * @param type 类型
@@ -69,6 +60,6 @@ class Dimension {
   }
 }
 
-type DimensionType = 'px' | 'fr' | 'auto'
+type DimensionType = 'fr' | 'px' | 'auto'
 
 export { Grid as default, Dimension }

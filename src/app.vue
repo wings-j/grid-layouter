@@ -1,6 +1,6 @@
 <script setup lang="ts">
   import Grid from '@/core/grid'
-  import { ElMessage } from 'element-plus'
+  import { ElMessage, ElTooltip } from 'element-plus'
   import { reactive } from 'vue'
 
   const grid = reactive(new Grid())
@@ -13,20 +13,31 @@
    * 处理输出点击
    */
   function handleOutputClick() {
-    navigator.clipboard.writeText(grid.style)
-    ElMessage.success('CSS 代码已复制到剪贴板')
+    navigator.clipboard.writeText(grid.css)
+    ElMessage.success('CSS copied to clipboard')
   }
 </script>
 
 <template>
   <div class="d-flex h-100vh column-gap-10" style="background-color: #f9f9f9">
     <div class="flex-grow-1 h-100 p-20 bg-white">
-      <div style="width: 100%; height: 100%" :style="grid.style">
+      <div
+        style="display: grid; grid-auto-flow: row dense; width: 100%; height: 100%"
+        :style="{
+          gridTemplateColumns: `100px ${grid.columns.map(a => a.token).join(' ')}`,
+          gridTemplateRows: `100px ${grid.rows.map(a => a.token).join(' ')}`
+        }"
+      >
+        <div style="grid-area: 1/1/2/2"></div>
+        <div v-for="(a, i) of grid.columns" :style="{ gridArea: `1 / ${i + 2} / 2 / ${i + 3}` }"></div>
+        <div v-for="(a, i) of grid.rows" :style="{ gridArea: `${i + 2} / 1 / ${i + 3} / 2` }"></div>
         <div v-for="i of grid.rows.length * grid.columns.length" :key="i" class="item">{{ i }}</div>
       </div>
     </div>
-    <div class="h-100 p-v-20 bg-white t-center" style="width: 60px">
-      <img style="width: 50%" src="./images/sharp.svg" @click="handleOutputClick" />
+    <div class="d-flex flex-column align-items-center h-100 p-v-20 bg-white" style="width: 60px">
+      <el-tooltip effect="dark" content="Copy CSS to clipboard" placement="top-start">
+        <img class="m-t-auto cursor-pointer" style="width: 50%" src="./images/sharp.svg" @click="handleOutputClick" />
+      </el-tooltip>
     </div>
   </div>
 </template>
