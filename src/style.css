@@ -1,0 +1,8 @@
+@import '@wings-j/web-style/dist/index.css';
+@import 'element-plus/dist/index.css';
+
+body {
+  overflow: hidden;
+  width: 100vw;
+  height: 100vh;
+}
