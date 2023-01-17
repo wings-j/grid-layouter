@@ -1,10 +1,31 @@
 <script setup lang="ts">
   import Grid, { Cell } from '@/core/grid'
   import { ElInput, ElMessage, ElTooltip } from 'element-plus'
-  import { reactive } from 'vue'
+  import { computed, reactive } from 'vue'
 
   const grid = reactive(new Grid(['1fr', '1fr', '1fr'], ['1fr', '1fr', '1fr']))
   const selectedCells = reactive<Set<Cell>>(new Set())
+  const selectedValid = computed(() => {
+    if (selectedCells.size === 0) {
+      return false
+    }
+
+    let minRowStart = Math.min(...Array.from(selectedCells).map(a => a.rowStart))
+    let minColumnStart = Math.min(...Array.from(selectedCells).map(a => a.columnStart))
+    let maxRowEnd = Math.max(...Array.from(selectedCells).map(a => a.rowEnd))
+    let maxColumnEnd = Math.max(...Array.from(selectedCells).map(a => a.columnEnd))
+    let frameArea = (maxRowEnd - minRowStart) * (maxColumnEnd - minColumnStart)
+
+    let totalArea = 0
+    for (let a of selectedCells) {
+      totalArea += (a.rowEnd - a.rowStart) * (a.columnEnd - a.columnStart)
+      if (a.rowStart < minRowStart || a.rowEnd > maxRowEnd || a.columnStart < minColumnStart || a.columnEnd > maxColumnEnd) {
+        return false
+      }
+    }
+
+    return totalArea === frameArea
+  })
 
   /**
    * 处理单元格点击
@@ -17,7 +38,22 @@
       selectedCells.add(cell)
     }
   }
+  /**
+   * 处理合并点击
+   */
+  function handleCombineCellClick() {
+    grid.combineCells(Array.from(selectedCells))
 
+    selectedCells.clear()
+  }
+  /**
+   * 处理分离点击
+   */
+  function handleSeparateCellClick() {
+    grid.separateCell(Array.from(selectedCells)[0])
+
+    selectedCells.clear()
+  }
   /**
    * 处理输出点击
    */
@@ -66,8 +102,7 @@
             v-for="a of grid.cells"
             :key="a.index"
             class="cell d-flex flex-column justify-content-center align-items-center cursor-pointer"
-            :class="{ selected: selectedCells.has(a) }"
-            style="color: hsl(160.55, 98.8%, 43.03%); border: 2px dashed currentColor"
+            :class="{ selected: selectedCells.has(a), valid: selectedValid }"
             :style="a.style"
             @click="handleCellClick(a)"
           >
@@ -77,10 +112,32 @@
       </div>
     </div>
     <div class="d-flex flex-column align-items-center h-100 p-h-10 p-v-20 bg-white">
-      <div class="f-28 cursor-pointer" @click="grid.addDimension('r', '1fr')">+R</div>
-      <div class="m-t-15 f-28 cursor-pointer" @click="grid.addDimension('c', '1fr')">+C</div>
+      <el-tooltip effect="dark" content="Add a row" placement="left">
+        <div class="f-24 cursor-pointer" @click="grid.addDimension('r', '1fr')">+R</div>
+      </el-tooltip>
+      <el-tooltip effect="dark" content="Add a column" placement="left">
+        <div class="m-t-15 f-24 cursor-pointer" @click="grid.addDimension('c', '1fr')">+C</div>
+      </el-tooltip>
       <div class="w-100 b-t-grayE m-v-15"></div>
-      <el-tooltip effect="dark" content="Copy CSS to clipboard" placement="top-start">
+      <el-tooltip effect="dark" content="Combine" placement="left">
+        <img
+          class="cursor-pointer"
+          :class="{ 'pointer-events-none opacity-4': selectedCells.size <= 1 || !selectedValid }"
+          style="width: 50%"
+          src="./images/combine.svg"
+          @click="handleCombineCellClick"
+        />
+      </el-tooltip>
+      <el-tooltip effect="dark" content="Separate" placement="left">
+        <img
+          class="m-t-20 cursor-pointer"
+          :class="{ 'pointer-events-none opacity-4': selectedCells.size !== 1 || !Array.from(selectedCells)[0].combined }"
+          style="width: 50%"
+          src="./images/separate.svg"
+          @click="handleSeparateCellClick"
+        />
+      </el-tooltip>
+      <el-tooltip effect="dark" content="Copy CSS to clipboard" placement="left">
         <img class="m-t-auto cursor-pointer" style="width: 50%" src="./images/sharp.svg" @click="handleOutputClick" />
       </el-tooltip>
     </div>
@@ -96,8 +153,22 @@
     border-right: 2px solid #eee;
   }
   .cell {
+    --blue: rgb(1, 193, 218);
+    --red: rgb(253, 90, 131);
+    --green: rgb(0, 235, 137);
+
+    color: var(--blue);
+    border: 2px dashed currentColor;
+
     &.selected {
-      background-color: hsla(160.55, 98.8%, 43.03%, 0.3);
+      color: white;
+      border: 2px dashed var(--red);
+      background-color: var(--red);
+
+      &.valid {
+        border: 2px dashed var(--green);
+        background-color: var(--green);
+      }
     }
   }
 </style>
