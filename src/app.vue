@@ -70,7 +70,7 @@
       <div class="d-grid justify-items-center align-items-center" :style="{ gridTemplateColumns: grid.columns.join(' ') }">
         <div v-for="(a, i) of grid.columns" :key="i">
           <div class="input">
-            <div class="f-bold">C-{{ i + 1 }}</div>
+            <div class="f-bold t-nowrap">C-{{ i + 1 }}</div>
             <div class="m-l-10" style="width: 80px"><el-input v-model="grid.columns[i]" /></div>
             <img class="m-l-10 cursor-pointer" style="height: 16px" src="./images/cross.svg" @click="grid.removeDimension('c', i)" />
           </div>
@@ -84,7 +84,7 @@
       >
         <div v-for="(a, i) of grid.rows" :key="i">
           <div class="input">
-            <div class="f-bold">R-{{ i + 1 }}</div>
+            <div class="f-bold t-nowrap">R-{{ i + 1 }}</div>
             <div class="m-l-10" style="width: 80px"><el-input v-model="grid.rows[i]" /></div>
             <img class="m-l-10 cursor-pointer" style="height: 16px" src="./images/cross.svg" @click="grid.removeDimension('r', i)" />
           </div>

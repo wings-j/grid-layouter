@@ -12,7 +12,7 @@ class Grid {
     return `grid-template-rows: ${this.rows.join(' ')}; grid-template-columns: ${this.columns.join(' ')};`
   }
   get css() {
-    return `.grid { display: grid; ${this.style} }`
+    return [`.grid { display: grid; ${this.style} }`, ...this.cells.map(a => a.css)].join('\n')
   }
 
   /**
@@ -47,6 +47,10 @@ class Grid {
       }
     } else if (dimension == 'c') {
       this.columns.push(value)
+
+      for (let i = 0; i < this.rows.length; i++) {
+        this.cells.push(new Cell(i + 1, i + 2, this.columns.length, this.columns.length + 1))
+      }
     }
 
     this.arrange()
@@ -57,10 +61,44 @@ class Grid {
    * @param index 索引
    */
   removeDimension(dimension: GridDimension, index: number) {
+    let start = index + 1
+    let end = index + 2
+    let deleting = []
+
     if (dimension == 'r') {
       this.rows.splice(index, 1)
+
+      for (let a of this.cells) {
+        if (a.rowStart === start && a.rowEnd === end) {
+          deleting.push(a)
+        } else {
+          if (a.rowStart > start) {
+            a.rowStart--
+          }
+          if (a.rowEnd >= end) {
+            a.rowEnd--
+          }
+        }
+      }
     } else if (dimension == 'c') {
       this.columns.splice(index, 1)
+
+      for (let a of this.cells) {
+        if (a.columnStart === start && a.columnEnd === end) {
+          deleting.push(a)
+        } else {
+          if (a.columnStart > start) {
+            a.columnStart--
+          }
+          if (a.columnEnd >= end) {
+            a.columnEnd--
+          }
+        }
+      }
+    }
+
+    for (let a of deleting) {
+      this.cells.splice(this.cells.indexOf(a), 1)
     }
 
     this.arrange()
@@ -130,7 +168,7 @@ class Cell {
   }
 
   get style() {
-    return `grid-area: ${this.rowStart} / ${this.columnStart} / ${this.rowEnd} / ${this.columnEnd}`
+    return `grid-area: ${this.rowStart} / ${this.columnStart} / ${this.rowEnd} / ${this.columnEnd};`
   }
   get css() {
     return `.cell-${this.index} { ${this.style} }`

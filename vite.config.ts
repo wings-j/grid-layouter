@@ -9,5 +9,6 @@ export default defineConfig({
       '@': Path.resolve(__dirname, 'src')
     }
   },
+  build: { outDir: './docs' },
   plugins: [Vue()]
 })
