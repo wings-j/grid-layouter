@@ -171,7 +171,7 @@ class Cell {
     return `grid-area: ${this.rowStart} / ${this.columnStart} / ${this.rowEnd} / ${this.columnEnd};`
   }
   get css() {
-    return `.cell-${this.index} { ${this.style} }`
+    return `.cell-${this.index + 1} { ${this.style} }`
   }
 
   /**
